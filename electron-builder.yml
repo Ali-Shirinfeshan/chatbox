@@ -1,5 +1,7 @@
-productName: Chatbox
-appId: xyz.chatboxapp.app
+productName: Chatbox Persian
+appId: xyz.chatboxapp.persian
+extraMetadata:
+  productName: Chatbox Persian
 # Match packages/chatbox-i18n/src/languages.ts using Windows/Linux locale filenames.
 electronLanguages:
   - en-US
@@ -116,9 +118,5 @@ directories:
 extraResources:
   - ./assets/**
 
-publish:
-  - provider: s3
-    bucket: chatbox
-    endpoint: https://208624959c9d215edea0720162a740c1.r2.cloudflarestorage.com
-    path: /releases
-    channel: ${env.UPDATE_CHANNEL}
+# Auto-update disabled for personal build.
+# Original publish config removed to avoid clashing with official releases.
