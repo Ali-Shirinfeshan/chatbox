@@ -3,6 +3,7 @@
 import type { Settings } from '@shared/types'
 import { getDefaultStore } from 'jotai'
 import i18n from '@/i18n'
+import { isRTL } from '@/utils/rtl'
 import { getLogger } from '@/lib/utils'
 import { sessionStartupRecovery } from '@/packages/session-startup-recovery'
 import platform from '@/platform'
@@ -79,6 +80,11 @@ export async function initializeRenderer(): Promise<void> {
 }
 
 /** Hydrates the application graph and registers post-migration host bindings before React renders. */
+function syncDocumentDirection(language: string) {
+  if (typeof document === 'undefined') return
+  document.documentElement.dir = isRTL(language) ? 'rtl' : 'ltr'
+}
+
 export async function bootstrapRenderer(application: RendererApplication): Promise<Settings> {
   const [, settings] = await Promise.all([
     application.bootstrap(),
@@ -88,6 +94,7 @@ export async function bootstrapRenderer(application: RendererApplication): Promi
     initRecentDirectoriesStore(),
   ])
 
+  syncDocumentDirection(settings.language)
   void i18n.changeLanguage(settings.language)
   initLoginLicenseStateReconciliation()
 

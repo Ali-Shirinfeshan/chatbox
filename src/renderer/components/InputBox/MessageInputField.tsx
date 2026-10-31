@@ -187,6 +187,7 @@ export const MessageInputField = memo(
           minRows={1}
           // Grows with the draft up to 12 lines (240px), fewer on short viewports.
           maxRows={Math.min(12, Math.max(4, Math.floor(viewportHeight / 60)))}
+          dir="auto"
           value={editValue}
           autoFocus={autoFocus}
           readOnly={isReadOnly}

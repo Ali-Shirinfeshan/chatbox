@@ -862,7 +862,7 @@ const _Message: FC<Props> = (props) => {
         )}
       >
         <Box
-          className={cn('msg-content', { 'msg-content-small': small })}
+          dir="auto" style={{ unicodeBidi: "plaintext" }} className={cn('msg-content', { 'msg-content-small': small })}
           sx={small ? { fontSize: theme.typography.body2.fontSize } : {}}
         >
           {showWorkSummary && (

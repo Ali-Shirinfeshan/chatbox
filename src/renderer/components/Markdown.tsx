@@ -812,7 +812,7 @@ const BlockCode = memo(
         </Flex>
 
         <Stack
-          className={clsx(
+          dir="ltr" className={clsx(
             'max-w-full min-w-0',
             needCollapse && collapsed && generating ? 'h-[10rem] overflow-hidden justify-end' : '',
             needCollapse && collapsed && !generating ? 'h-[10rem] overflow-auto' : ''
