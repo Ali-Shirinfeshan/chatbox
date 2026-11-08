@@ -1,7 +1,9 @@
 /// <reference types="vite/client" />
 
+import { startChatboxAPIOriginProbing } from '@shared/request/chatboxai_pool'
 import type { Settings } from '@shared/types'
 import { getDefaultStore } from 'jotai'
+import localforage from 'localforage'
 import i18n from '@/i18n'
 import { isRTL } from '@/utils/rtl'
 import { getLogger } from '@/lib/utils'
@@ -45,6 +47,15 @@ function isSessionWorkInFlight(): boolean {
 /** Runs the pre-render migration and telemetry phase in its historical order. */
 export async function initializeRenderer(): Promise<void> {
   log.info('initializeApp')
+  const apiOriginStore = localforage.createInstance({ name: 'chatboxcache' })
+  startChatboxAPIOriginProbing({
+    storage: {
+      get: (key) => apiOriginStore.getItem(key),
+      set: async (key, value) => {
+        await apiOriginStore.setItem(key, value)
+      },
+    },
+  })
   await (await import('./renderer-backup')).rendererBackupService.cleanupBeforeBootstrap()
 
   let migrationError: unknown
