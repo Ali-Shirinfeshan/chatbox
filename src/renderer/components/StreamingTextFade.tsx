@@ -23,5 +23,9 @@ export default function StreamingTextFade(props: {
   }
   if (cursor < text.length) textNodes.push(text.slice(cursor))
 
-  return <div className={className}>{segments.length > 0 ? textNodes : text}</div>
+  return (
+    <div dir="auto" style={{ unicodeBidi: 'plaintext', textAlign: 'start' }} className={className}>
+      {segments.length > 0 ? textNodes : text}
+    </div>
+  )
 }

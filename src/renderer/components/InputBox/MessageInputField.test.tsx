@@ -61,6 +61,25 @@ function textareaValue(input: HTMLElement): string {
 }
 
 describe('MessageInputField', () => {
+  test('preserves mixed-language drafts and automatic direction when the first character is removed', () => {
+    const onValueChange = vi.fn()
+    renderField({ onValueChange })
+    const input = screen.getByRole<HTMLTextAreaElement>('textbox')
+    for (const value of [
+      'سلام، API سایت AvalAI آماده است.',
+      'This paragraph quotes سلام.',
+      'آدرس API: https://api.avalai.ir/v1',
+      'سReact یک کتابخانه است.',
+      'React یک کتابخانه است.',
+      '',
+      'سلام دوباره',
+    ]) {
+      fireEvent.input(input, { target: { value } })
+      expect(input.value).toBe(value)
+      expect(input.getAttribute('dir')).toBe('auto')
+      expect(onValueChange).toHaveBeenLastCalledWith(value)
+    }
+  })
   test('exposes a localized accessible name independently from its placeholder', () => {
     renderField({ isReadOnly: true })
 

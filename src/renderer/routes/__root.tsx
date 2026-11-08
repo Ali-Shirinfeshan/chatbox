@@ -484,6 +484,7 @@ const creteMantineTheme = (scale = 1) =>
   createTheme({
     /** Put your mantine theme override here */
     scale,
+    fontFamily: '"Chatbox Persian Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     // Controls (buttons, rows, icon buttons, inputs) use md; surfaces (modals, cards, papers) opt into lg below.
     defaultRadius: 'md',
     primaryColor: 'chatbox-brand',

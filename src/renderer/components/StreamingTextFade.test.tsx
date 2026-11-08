@@ -143,6 +143,21 @@ describe('wrapStreamingSegmentsInHast', () => {
 })
 
 describe('StreamingTextFade', () => {
+  it('keeps plain mixed-language output automatically directed throughout streaming', () => {
+    const view = render(<StreamingTextFade text="سلام" streamKey="rtl-plain" generating />)
+    for (const [text, generating] of [
+      ['سلام، API: https://api.avalai.ir/v1', true],
+      ['سلام، API: https://api.avalai.ir/v1\nThis is English.', true],
+      ['سلام، API: https://api.avalai.ir/v1\nThis is English.', false],
+    ] as const) {
+      view.rerender(<StreamingTextFade text={text} streamKey="rtl-plain" generating={generating} />)
+      const output = view.container.firstElementChild as HTMLElement
+      expect(output.getAttribute('dir')).toBe('auto')
+      expect(output.style.unicodeBidi).toBe('plaintext')
+      expect(output.style.textAlign).toBe('start')
+      expect(output.textContent).toBe(text)
+    }
+  })
   afterEach(() => {
     cleanup()
     vi.unstubAllGlobals()

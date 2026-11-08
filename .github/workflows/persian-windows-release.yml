@@ -1,0 +1,94 @@
+name: Chatbox Persian - Windows installer and personal updates
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Personal version, e.g. 1.24.2-persian.1 (must match merged upstream source)'
+        required: true
+        type: string
+      publish:
+        description: 'Publish public GitHub Release after all checks pass'
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  windows-x64:
+    if: github.repository != 'chatboxai/chatbox'
+    runs-on: windows-2022
+    timeout-minutes: 120
+    env:
+      PERSIAN_GITHUB_REPOSITORY: ${{ github.repository }}
+      CHATBOX_PERSIAN_BUILD: '1'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check complete source is present (ZIP alone is insufficient)
+        shell: pwsh
+        run: |
+          if (!(Test-Path release/app/package.json) -or !(Test-Path release/app/package-lock.json)) {
+            throw 'Missing release/app manifests; restore the full source tree from the Git checkout before running the workflow.'
+          }
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - name: Install source dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Download and verify embedded Vazirmatn font and OFL license
+        run: node scripts/persian/fetch-vazirmatn.mjs
+      - name: Check source-only tests
+        run: node --test scripts/persian/*.test.mjs
+        shell: bash
+      - name: Run Persian RTL tests
+        run: pnpm exec vitest run src/renderer/components/Markdown.ssr.test.tsx src/renderer/components/Markdown.test.tsx src/renderer/components/StreamingTextFade.test.tsx src/renderer/components/InputBox/MessageInputField.test.tsx src/main/app-updater.test.ts
+      - name: Run type check
+        run: pnpm run check
+      - name: Run project unit tests
+        run: pnpm run test:unit
+      - name: Stamp the build-only personal version
+        run: node scripts/persian/stamp-version.mjs "${{ inputs.version }}"
+      - name: Build all Electron bundles
+        run: pnpm run build
+        env:
+          NODE_ENV: production
+      - name: Build Windows x64 NSIS installer (unsigned)
+        run: pnpm exec electron-builder build --config electron-builder.persian.cjs --win nsis --x64 --publish never
+      - name: Verify installer, bundled fonts, and personal-only update feed
+        run: node scripts/persian/verify-release.mjs
+      - name: Save installer, update manifest and blockmaps
+        uses: actions/upload-artifact@v4
+        with:
+          name: Chatbox-Persian-Windows-x64-${{ inputs.version }}
+          path: |
+            release/build/*.exe
+            release/build/*.exe.blockmap
+            release/build/latest.yml
+          if-no-files-found: error
+      - name: Publish to the FORK's GitHub Releases (public repo required)
+        if: inputs.publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: persian-v${{ inputs.version }}
+          name: Chatbox Persian ${{ inputs.version }}
+          body: |
+            Windows x64 installer for Chatbox Persian, with local Vazirmatn and independent updates.
+            Unsigned build: Windows SmartScreen may display a warning.
+            Project license: GPL-3.0; bundled Vazirmatn font: OFL-1.1.
+          draft: false
+          prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: |
+            release/build/*.exe
+            release/build/*.exe.blockmap
+            release/build/latest.yml

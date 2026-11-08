@@ -269,7 +269,8 @@ const getAssetPath = (...paths: string[]): string => {
 }
 
 // 开发环境使用 chatbox-dev:// 协议，避免和正式版冲突
-const PROTOCOL_SCHEME = process.defaultApp ? 'chatbox-dev' : 'chatbox'
+const PROTOCOL_SCHEME =
+  process.env.CHATBOX_PERSIAN_BUILD === '1' ? 'chatbox-persian' : process.defaultApp ? 'chatbox-dev' : 'chatbox'
 
 if (MAIN_RUNTIME_POLICY.registerProtocolClient) {
   if (process.defaultApp) {

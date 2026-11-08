@@ -74,6 +74,7 @@ import { SandboxFileLink } from './message-parts/SandboxFileLink'
 import { parseSandboxLinkHref } from './message-parts/sandbox-link'
 import { type StreamingTextSegment, useStreamingTextSegments, wrapStreamingSegmentsInHast } from './streaming-text-fade'
 import { rehypeTranscriptBlocks } from './chat/transcript-markdown-blocks'
+import { rehypeContentDirection } from './markdown-content-direction'
 import './shiki-code.css'
 
 const CODE_BLOCK_COLLAPSE_LINE_THRESHOLD = 7
@@ -167,7 +168,7 @@ function Markdown(props: {
   )
   const streamingSegments = useStreamingTextSegments(processedChildren, generating, uniqueId)
   const rehypePlugins = useMemo<RehypePlugins>(() => {
-    const plugins: RehypePlugins = [rehypeKatex]
+    const plugins: RehypePlugins = [rehypeKatex, rehypeContentDirection]
     if (streamingSegments.length > 0) plugins.push([rehypeWrapStreamingSegments, streamingSegments])
     plugins.push([rehypeTranscriptBlocks, { sourceId: uniqueId ?? fallbackId }])
     return plugins
@@ -219,6 +220,8 @@ function Markdown(props: {
                 <a
                   {...props}
                   href={href}
+                  dir="auto"
+                  style={{ ...props.style, unicodeBidi: 'isolate' }}
                   target="_blank"
                   rel="noreferrer"
                   onClick={(e) => {
@@ -372,6 +375,8 @@ const InlineCode = memo((props: { children: string; className?: string }) => {
   const { children, className } = props
   return (
     <code
+      dir="ltr"
+      style={{ unicodeBidi: 'isolate' }}
       className={clsx(
         'inline-code bg-chatbox-background-secondary text-[0.85em] rounded-sm px-1 py-0.5 mx-0.5',
         className

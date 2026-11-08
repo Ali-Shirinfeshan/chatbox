@@ -123,11 +123,12 @@ export function getThemeDesign(
     typography: {
       // In Chinese and Japanese the characters are usually larger,
       // so a smaller fontsize may be appropriate.
-      ...(language === 'ar'
-        ? {
-            fontFamily: 'Cairo, Arial, sans-serif',
-          }
-        : {}),
+      // unicode-range on Chatbox Persian Text preserves the existing Latin font.
+      // Arabic UI retains Cairo while non-Arabic UIs get Vazirmatn for Persian glyphs.
+      fontFamily:
+        language === 'ar'
+          ? 'Cairo, "Chatbox Persian Text", Arial, sans-serif'
+          : '"Chatbox Persian Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontSize: 14,
     },
     direction: language === 'ar' ? 'rtl' : 'ltr',

@@ -87,10 +87,6 @@ win:
         - arm64
   verifyUpdateCodeSignature: false
   artifactName: ${productName}-${version}-Setup.${ext}
-  signtoolOptions:
-    sign: ./custom_win_sign.js
-    signingHashAlgorithms:
-      - sha256
 
 nsis:
   oneClick: false
@@ -118,5 +114,5 @@ directories:
 extraResources:
   - ./assets/**
 
-# Auto-update disabled for personal build.
-# Original publish config removed to avoid clashing with official releases.
+# The personal release provider is defined only in electron-builder.persian.cjs.
+# Never use the official Chatbox update feed for a personal build.

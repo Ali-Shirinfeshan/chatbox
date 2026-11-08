@@ -1,0 +1,59 @@
+name: Chatbox Persian - Propose upstream changes without losing RTL
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '27 7 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  propose-upstream-merge:
+    if: github.repository != 'chatboxai/chatbox'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Fetch official main and create conflict-safe merge branch
+        id: sync
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add upstream https://github.com/chatboxai/chatbox.git
+          git fetch upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo 'Official changes are already present.'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="chatbox/sync-upstream-$(git rev-parse --short=10 upstream/main)"
+          git switch -c "$branch"
+          if ! git merge --no-ff --no-commit upstream/main; then
+            git diff --name-only --diff-filter=U || true
+            git merge --abort || true
+            echo 'STOP: merge conflicts require manual resolution; Persian branch is untouched.' >&2
+            exit 1
+          fi
+          git diff --check
+          git commit -m 'Merge upstream Chatbox main while keeping Persian patches'
+          git push --set-upstream origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Open PR on PERSONAL fork for review (not an upstream PR)
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.sync.outputs.branch }}
+          TARGET_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          gh pr create --repo "$TARGET_REPO" --base main --head "$BRANCH" \
+            --title 'Sync latest official Chatbox without dropping Persian RTL' \
+            --body 'Normal merge of upstream/main into the personal fork. Review Persian text, mixed LTR/RTL, fonts, update feed, and all tests before merging or publishing. Conflicts must be resolved manually; no automatic release occurs.'

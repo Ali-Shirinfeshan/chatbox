@@ -100,6 +100,18 @@ export class AppUpdater {
 
     this.isChecking = true
     try {
+      // This flag is embedded by electron-vite at build time. It cannot be
+      // changed on a user's machine to redirect update downloads.
+      if (process.env.CHATBOX_PERSIAN_BUILD === '1') {
+        // The personal installer must contain app-update.yml generated from
+        // electron-builder.persian.cjs (pointing ONLY at the personal repo).
+        // Never fall back to official Chatbox URLs on a failed personal check.
+        autoUpdater.channel = 'latest'
+        autoUpdater.allowPrerelease = true // e.g. 1.24.2-persian.1
+        autoUpdater.allowDowngrade = false
+        return await autoUpdater.checkForUpdates()
+      }
+
       const feedUrls = [
         'https://chatboxai.app/api/auto_upgrade',
         'https://api.chatboxai.app/api/auto_upgrade',

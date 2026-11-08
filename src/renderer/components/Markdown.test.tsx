@@ -97,6 +97,25 @@ afterEach(() => {
   preloadLanguage.mockClear()
 })
 
+describe('Markdown content direction', () => {
+  it('keeps per-paragraph automatic direction as mixed-language streaming text grows and finishes', () => {
+    const content = (source: string, generating: boolean) => (
+      <Markdown generating={generating} uniqueId="rtl-stream" enableLaTeXRendering={false}>{source}</Markdown>
+    )
+    const view = render(content('سلام', true))
+    for (const [source, generating] of [
+      ['سلام، API آماده است.', true],
+      ['سلام، API آماده است.\n\nThis paragraph quotes سلام.', true],
+      ['سلام، API آماده است.\n\nThis paragraph quotes سلام.', false],
+    ] as const) {
+      view.rerender(content(source, generating))
+      const paragraphs = view.container.querySelectorAll('p')
+      for (const paragraph of Array.from(paragraphs)) expect(paragraph.getAttribute('dir')).toBe('auto')
+      expect(Array.from(paragraphs, (p) => p.textContent).join('\n\n')).toBe(source)
+    }
+  })
+})
+
 describe('Markdown code wrapping', () => {
   const content = (source: string, generating = false, hiddenCodeActions = false) => (
     <MantineProvider>
