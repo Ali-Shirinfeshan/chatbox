@@ -77,7 +77,6 @@ import { MessageMermaid, SVGPreview } from './Mermaid'
 import { SandboxFileLink } from './message-parts/SandboxFileLink'
 import { parseSandboxLinkHref } from './message-parts/sandbox-link'
 import { type StreamingTextSegment, useStreamingTextSegments, wrapStreamingSegmentsInHast } from './streaming-text-fade'
-import { rehypeTranscriptBlocks } from './chat/transcript-markdown-blocks'
 import { rehypeContentDirection } from './markdown-content-direction'
 import './shiki-code.css'
 
